@@ -3,6 +3,8 @@
 # Build Hub runners authenticate to the workspace's cache without a token; elsewhere set
 # BITRISE_BUILD_CACHE_AUTH_TOKEN and BITRISE_BUILD_CACHE_WORKSPACE_ID.
 set -euo pipefail
+# Empty secrets (Build Hub) must not override the runner's own cache access.
+[ -n "${BITRISE_BUILD_CACHE_AUTH_TOKEN:-}" ] || unset BITRISE_BUILD_CACHE_AUTH_TOKEN BITRISE_BUILD_CACHE_WORKSPACE_ID
 tool="$1"; BIN="$RUNNER_TEMP/bbc-bin"; mkdir -p "$BIN"
 curl --retry 5 -sSfL 'https://raw.githubusercontent.com/bitrise-io/bitrise-build-cache-cli/main/install/installer.sh' | sh -s -- -b "$BIN" -d
 BBC="$BIN/bitrise-build-cache"

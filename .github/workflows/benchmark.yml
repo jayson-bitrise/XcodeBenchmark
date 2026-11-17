@@ -12,8 +12,12 @@ on:
         options:
           - bitrise-m5pro-benchmark
           - bitrise-m6-benchmark
-          - macos-15
-          - macos-15-xlarge
+          - xcode-27
+          - xcode-27-xlarge
+      xcode:
+        description: "Xcode version to select (same on every runner)"
+        type: string
+        default: "27.2"
       runs:
         description: "Measured runs"
         type: string
@@ -42,6 +46,9 @@ jobs:
     timeout-minutes: 360
     env:
       METHOD_VERSION: gha-v1
+      BENCH_XCODE: ${{ inputs.xcode }}
+      BITRISE_BUILD_CACHE_AUTH_TOKEN: ${{ secrets.BITRISE_BUILD_CACHE_AUTH_TOKEN }}
+      BITRISE_BUILD_CACHE_WORKSPACE_ID: ${{ vars.BITRISE_BUILD_CACHE_WORKSPACE_ID }}
       MACHINE_KEY: ${{ inputs.runner }}
       BENCHMARK_RUNS: ${{ inputs.runs }}
       WARMUP_RUNS: ${{ inputs.warmup_runs }}
@@ -56,6 +63,8 @@ jobs:
           cp -R .github/bench "$RUNNER_TEMP/bench"
           echo "BENCH_OUT=$RUNNER_TEMP/bench-out" >> "$GITHUB_ENV"
           if [ "${{ inputs.build_cache }}" = true ]; then bash "$RUNNER_TEMP/bench/cache.sh" xcode; fi
+      - name: Select Xcode ${{ inputs.xcode }}
+        run: bash "$RUNNER_TEMP/bench/select_xcode.sh"
       - name: Machine info
         run: source "$RUNNER_TEMP/bench/lib.sh" && sysinfo
       - name: Prepare (not timed)
